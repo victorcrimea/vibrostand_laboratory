@@ -13,8 +13,11 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp\
-        mainwindow.cpp
+        mainwindow.cpp \
+    noise.cpp
 
-HEADERS  += mainwindow.h
+HEADERS  += mainwindow.h \
+    noise.h
 
-FORMS    += mainwindow.ui
+FORMS    += mainwindow.ui \
+    mainwindow_windows.ui
