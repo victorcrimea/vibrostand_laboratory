@@ -30,7 +30,7 @@
      <attribute name="title">
       <string>Лицевая панель</string>
      </attribute>
-     <widget class="QFrame" name="input_signal">
+     <widget class="QCustomPlot" name="input_signal" native="true">
       <property name="geometry">
        <rect>
         <x>560</x>
@@ -39,14 +39,8 @@
         <height>171</height>
        </rect>
       </property>
-      <property name="frameShape">
-       <enum>QFrame::StyledPanel</enum>
-      </property>
-      <property name="frameShadow">
-       <enum>QFrame::Raised</enum>
-      </property>
      </widget>
-     <widget class="QFrame" name="frame_5">
+     <widget class="QCustomPlot" name="widget_5" native="true">
       <property name="geometry">
        <rect>
         <x>560</x>
@@ -55,14 +49,8 @@
         <height>191</height>
        </rect>
       </property>
-      <property name="frameShape">
-       <enum>QFrame::StyledPanel</enum>
-      </property>
-      <property name="frameShadow">
-       <enum>QFrame::Raised</enum>
-      </property>
      </widget>
-     <widget class="QFrame" name="frame_6">
+     <widget class="QCustomPlot" name="signal_spectrum" native="true">
       <property name="geometry">
        <rect>
         <x>560</x>
@@ -70,12 +58,6 @@
         <width>471</width>
         <height>161</height>
        </rect>
-      </property>
-      <property name="frameShape">
-       <enum>QFrame::StyledPanel</enum>
-      </property>
-      <property name="frameShadow">
-       <enum>QFrame::Raised</enum>
       </property>
      </widget>
      <widget class="QFrame" name="frame_7">
@@ -1017,9 +999,9 @@
      <widget class="QWidget" name="layoutWidget">
       <property name="geometry">
        <rect>
-        <x>60</x>
+        <x>10</x>
         <y>90</y>
-        <width>381</width>
+        <width>501</width>
         <height>31</height>
        </rect>
       </property>
@@ -1064,10 +1046,10 @@
      <widget class="QFrame" name="frame_3">
       <property name="geometry">
        <rect>
-        <x>450</x>
-        <y>30</y>
-        <width>571</width>
-        <height>341</height>
+        <x>580</x>
+        <y>60</y>
+        <width>601</width>
+        <height>431</height>
        </rect>
       </property>
       <property name="frameShape">
@@ -1102,8 +1084,15 @@
     </property>
     <addaction name="about"/>
    </widget>
+   <widget class="QMenu" name="menuReplot">
+    <property name="title">
+     <string>replot</string>
+    </property>
+    <addaction name="actionRegenerate_signal"/>
+   </widget>
    <addaction name="menu"/>
    <addaction name="menu_2"/>
+   <addaction name="menuReplot"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -1129,8 +1118,21 @@
     <string>О программе</string>
    </property>
   </action>
+  <action name="actionRegenerate_signal">
+   <property name="text">
+    <string>regenerate_signal</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>QCustomPlot</class>
+   <extends>QWidget</extends>
+   <header>qcustomplot.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

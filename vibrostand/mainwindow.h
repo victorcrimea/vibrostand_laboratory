@@ -2,6 +2,9 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <algorithm>
+
+#include "noise.h"
 
 namespace Ui {
 class MainWindow;
@@ -16,7 +19,10 @@ public:
 	~MainWindow();
 
 private slots:
-    void on_exit_triggered();
+	void on_exit_triggered();
+	void drawPlot();
+
+	void on_actionRegenerate_signal_triggered();
 
 private:
 	Ui::MainWindow *ui;

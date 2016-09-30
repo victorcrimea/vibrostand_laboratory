@@ -6,18 +6,20 @@
 
 QT       += core gui
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
 
 TARGET = vibrostand
 TEMPLATE = app
 
 
 SOURCES += main.cpp\
-        mainwindow.cpp \
-    noise.cpp
+		mainwindow.cpp \
+	noise.cpp \
+    qcustomplot.cpp
 
 HEADERS  += mainwindow.h \
-    noise.h
+	noise.h \
+    qcustomplot.h
 
 FORMS    += mainwindow.ui \
-    mainwindow_windows.ui
+	mainwindow_windows.ui

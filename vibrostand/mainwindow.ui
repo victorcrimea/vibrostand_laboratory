@@ -30,7 +30,7 @@
      <attribute name="title">
       <string>Лицевая панель</string>
      </attribute>
-     <widget class="QFrame" name="frame_4">
+     <widget class="QCustomPlot" name="input_signal">
       <property name="geometry">
        <rect>
         <x>560</x>
@@ -1120,6 +1120,14 @@
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>QCustomPlot</class>
+   <extends>QFrame</extends>
+   <header>qcustomplot.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>
