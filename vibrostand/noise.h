@@ -2,18 +2,21 @@
 #define NOISE_H
 
 #include "QVector"
-#include <random>
+#include <chrono>
 #include <cmath>
-#include <memory>
 #include <ctime>
+#include <memory>
+#include <random>
 
 using namespace std;
+
+using namespace std::chrono;
 
 class Noise
 {
 public:
 	Noise();
-	static unique_ptr<QVector<double>> getWhiteNoise(int length);
+	static shared_ptr<QVector<double>> getWhiteNoise(int length);
 };
 
 #endif // NOISE_H

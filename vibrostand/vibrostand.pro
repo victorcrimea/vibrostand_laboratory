@@ -5,7 +5,7 @@
 #-------------------------------------------------
 
 QT       += core gui
-
+QT += charts
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
 
 TARGET = vibrostand
@@ -17,11 +17,16 @@ DEFINES += QCUSTOMPLOT_USE_OPENGL
 SOURCES += main.cpp\
 		mainwindow.cpp \
 	noise.cpp \
-    qcustomplot.cpp
+	qcustomplot.cpp\
+	complex.cpp\
+	fft.cpp
+
 
 HEADERS  += mainwindow.h \
 	noise.h \
-    qcustomplot.h
+	qcustomplot.h\
+	complex.h\
+	fft.h
 
 FORMS    += \
 	mainwindow_windows.ui \
