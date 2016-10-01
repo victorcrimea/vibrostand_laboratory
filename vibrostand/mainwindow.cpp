@@ -2,21 +2,46 @@
 #include "QDebug"
 #include "QString"
 
-#include "qcustomplot.h"
+#include <chrono>
+#include <iostream>
+
 
 //#ifdef Q_OS_WIN
 //#include "ui_mainwindow_windows.h"
 //#else
 #include "ui_mainwindow96dpi.h"
 //#endif
-
+using namespace std::chrono;
 
 MainWindow::MainWindow(QWidget *parent) :
 	QMainWindow(parent),
 	ui(new Ui::MainWindow)
 {
 	ui->setupUi(this);
+
+
+
+	signalSpectrum = ui->signal_spectrum;
+	inputSignalPlot =  ui->input_signal;
+
+	//inputSignalPlot->setOpenGl(true);
+
+
 	drawPlot();
+
+	high_resolution_clock::time_point t1 = high_resolution_clock::now();
+	for(int i=0; i<60; ++i){
+		redrawPlot();
+	}
+	high_resolution_clock::time_point t2 = high_resolution_clock::now();
+
+	auto duration = duration_cast<milliseconds>( t2 - t1 ).count();
+
+	std::cout << "Duration: " << duration << std::endl;
+
+	//QTimer *timer = new QTimer(this);
+	//connect(timer, SIGNAL(timeout()), this, SLOT(redrawPlot()));
+	//timer->start(20);
 }
 
 MainWindow::~MainWindow()
@@ -31,20 +56,25 @@ void MainWindow::on_exit_triggered()
 
 void MainWindow::drawPlot()
 {
-	const int length = 102400;
+	const int length = 10240;
 	Noise noise;
-	std::shared_ptr<QVector<double>> signal = noise.getWhiteNoise(length);
-	QVector<double> x;
+	auto signal = noise.getWhiteNoise(length);
+	x = make_unique<QVector<double>>();
+
 	for(int i=0; i<length; ++i){
-		x.append(i);
+		x->append(i);
 	}
 
-	QCustomPlot *customPlot =  ui->input_signal;
-	customPlot->addGraph();
-	customPlot->graph(0)->setData(x, *signal);
-	customPlot->xAxis->setRange(0, length);
-	customPlot->yAxis->setRange(-2.5, 2.5);
-	customPlot->replot();
+	qDebug() << "xSize: " << x->size();
+	qDebug() << "signalSize: " << signal->size();
+
+	inputSignalPlot->addGraph();
+	inputSignalPlot->graph(0)->setData(*x, *signal, true);
+	inputSignalPlot->xAxis->setRange(0, length);
+	inputSignalPlot->yAxis->setRange(-2.5, 2.5);
+	inputSignalPlot->replot();
+
+	//exit(EXIT_SUCCESS);
 
 	//Probability histogram
 	int hist_len = 700;
@@ -62,12 +92,29 @@ void MainWindow::drawPlot()
 		xhist[i] = i;
 	}
 	printf("drawing...");
-	QCustomPlot *signalSpectrum = ui->signal_spectrum;
+
 	signalSpectrum->addGraph();
 	signalSpectrum->graph(0)->setData(xhist, hist);
 	signalSpectrum->xAxis->setRange(0, hist_len);
 	signalSpectrum->yAxis->setRange(0, *std::max_element(hist.begin(), hist.end()));
 	signalSpectrum->replot();
+}
+
+void MainWindow::redrawPlot()
+{
+	const int length = 10240;
+	Noise noise;
+	auto signal = Noise::getWhiteNoise(length);
+
+
+	static int counter= 0;
+
+	//inputSignalPlot->graph(0)->setData()
+	inputSignalPlot->graph(0)->setData(*x, *signal, true);
+
+	inputSignalPlot->xAxis->setRange(0, length);
+	inputSignalPlot->yAxis->setRange(-2.5, 2.5);
+	inputSignalPlot->replot();
 }
 
 void MainWindow::on_actionRegenerate_signal_triggered()

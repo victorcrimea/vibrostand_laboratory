@@ -13,7 +13,7 @@ class Noise
 {
 public:
 	Noise();
-	static shared_ptr<QVector<double>> getWhiteNoise(int length);
+	static unique_ptr<QVector<double>> getWhiteNoise(int length);
 };
 
 #endif // NOISE_H
