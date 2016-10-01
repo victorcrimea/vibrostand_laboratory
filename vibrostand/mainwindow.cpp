@@ -4,11 +4,11 @@
 
 #include "qcustomplot.h"
 
-#ifdef Q_OS_WIN
-#include "ui_mainwindow_windows.h"
-#else
-#include "ui_mainwindow.h"
-#endif
+//#ifdef Q_OS_WIN
+//#include "ui_mainwindow_windows.h"
+//#else
+#include "ui_mainwindow96dpi.h"
+//#endif
 
 
 MainWindow::MainWindow(QWidget *parent) :

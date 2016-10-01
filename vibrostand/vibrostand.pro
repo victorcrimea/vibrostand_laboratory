@@ -21,5 +21,6 @@ HEADERS  += mainwindow.h \
 	noise.h \
     qcustomplot.h
 
-FORMS    += mainwindow.ui \
-	mainwindow_windows.ui
+FORMS    += \
+	mainwindow_windows.ui \
+    mainwindow96dpi.ui

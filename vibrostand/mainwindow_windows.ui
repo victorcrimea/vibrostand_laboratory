@@ -43,8 +43,8 @@
      <widget class="QCustomPlot" name="widget_5" native="true">
       <property name="geometry">
        <rect>
-        <x>560</x>
-        <y>190</y>
+        <x>640</x>
+        <y>200</y>
         <width>471</width>
         <height>191</height>
        </rect>
@@ -81,7 +81,7 @@
          <x>30</x>
          <y>10</y>
          <width>441</width>
-         <height>41</height>
+         <height>50</height>
         </rect>
        </property>
        <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -486,7 +486,7 @@
          <x>10</x>
          <y>60</y>
          <width>521</width>
-         <height>111</height>
+         <height>161</height>
         </rect>
        </property>
        <layout class="QFormLayout" name="formLayout">
@@ -1002,7 +1002,7 @@
         <x>10</x>
         <y>90</y>
         <width>501</width>
-        <height>31</height>
+        <height>42</height>
        </rect>
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -1068,7 +1068,7 @@
      <x>0</x>
      <y>0</y>
      <width>1044</width>
-     <height>20</height>
+     <height>45</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu">
