@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Вибростенд</string>
   </property>
   <widget class="QWidget" name="centralWidget">
    <widget class="QTabWidget" name="tabWidget">
@@ -137,7 +137,10 @@
         <string>Параметры сигнала</string>
        </property>
       </widget>
-      <widget class="QSpinBox" name="spinBox_4">
+      <widget class="QSpinBox" name="discr_freq">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="geometry">
         <rect>
          <x>40</x>
@@ -153,7 +156,10 @@
         <number>50000</number>
        </property>
       </widget>
-      <widget class="QSpinBox" name="spinBox_5">
+      <widget class="QSpinBox" name="num_ticks">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="geometry">
         <rect>
          <x>200</x>
@@ -169,7 +175,10 @@
         <number>5000</number>
        </property>
       </widget>
-      <widget class="QDoubleSpinBox" name="doubleSpinBox_6">
+      <widget class="QDoubleSpinBox" name="observation_time">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="geometry">
         <rect>
          <x>380</x>
@@ -224,7 +233,7 @@
         </font>
        </property>
        <property name="text">
-        <string>Колическтво отсчётов</string>
+        <string>Количество отсчётов</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
@@ -322,7 +331,7 @@
         </property>
        </item>
       </widget>
-      <widget class="QDial" name="dial">
+      <widget class="QDial" name="shaft_rpm_dial">
        <property name="geometry">
         <rect>
          <x>60</x>
@@ -341,7 +350,7 @@
         <number>10</number>
        </property>
        <property name="value">
-        <number>0</number>
+        <number>5000</number>
        </property>
        <property name="tracking">
         <bool>true</bool>
@@ -353,7 +362,7 @@
         <bool>true</bool>
        </property>
       </widget>
-      <widget class="QSpinBox" name="spinBox_9">
+      <widget class="QSpinBox" name="shaft_rpm">
        <property name="geometry">
         <rect>
          <x>50</x>
@@ -374,7 +383,7 @@
         <number>5000</number>
        </property>
       </widget>
-      <widget class="QLCDNumber" name="lcdNumber">
+      <widget class="QLCDNumber" name="shaft_rpm_real">
        <property name="geometry">
         <rect>
          <x>310</x>
@@ -388,6 +397,9 @@
        </property>
        <property name="segmentStyle">
         <enum>QLCDNumber::Filled</enum>
+       </property>
+       <property name="value" stdset="0">
+        <double>83.000000000000000</double>
        </property>
       </widget>
       <widget class="QLabel" name="label_26">
@@ -631,7 +643,7 @@
        <number>100000</number>
       </property>
       <property name="value">
-       <number>12000</number>
+       <number>7000</number>
       </property>
      </widget>
      <widget class="QCustomPlot" name="signal_hist" native="true">
@@ -877,7 +889,7 @@
      <attribute name="title">
       <string>Параметры вибросигнала</string>
      </attribute>
-     <widget class="QDoubleSpinBox" name="doubleSpinBox">
+     <widget class="QDoubleSpinBox" name="defect1Spin">
       <property name="geometry">
        <rect>
         <x>20</x>
@@ -886,8 +898,14 @@
         <height>21</height>
        </rect>
       </property>
+      <property name="maximum">
+       <double>5.000000000000000</double>
+      </property>
+      <property name="singleStep">
+       <double>0.100000000000000</double>
+      </property>
      </widget>
-     <widget class="QDoubleSpinBox" name="doubleSpinBox_2">
+     <widget class="QDoubleSpinBox" name="defect2Spin">
       <property name="geometry">
        <rect>
         <x>120</x>
@@ -896,8 +914,14 @@
         <height>21</height>
        </rect>
       </property>
+      <property name="maximum">
+       <double>4.000000000000000</double>
+      </property>
+      <property name="singleStep">
+       <double>0.100000000000000</double>
+      </property>
      </widget>
-     <widget class="QDoubleSpinBox" name="doubleSpinBox_3">
+     <widget class="QDoubleSpinBox" name="defect3Spin">
       <property name="geometry">
        <rect>
         <x>200</x>
@@ -906,8 +930,14 @@
         <height>21</height>
        </rect>
       </property>
+      <property name="maximum">
+       <double>4.000000000000000</double>
+      </property>
+      <property name="singleStep">
+       <double>0.100000000000000</double>
+      </property>
      </widget>
-     <widget class="QDoubleSpinBox" name="doubleSpinBox_4">
+     <widget class="QDoubleSpinBox" name="defect4Spin">
       <property name="geometry">
        <rect>
         <x>280</x>
@@ -916,8 +946,14 @@
         <height>21</height>
        </rect>
       </property>
+      <property name="maximum">
+       <double>3.000000000000000</double>
+      </property>
+      <property name="singleStep">
+       <double>0.100000000000000</double>
+      </property>
      </widget>
-     <widget class="QDoubleSpinBox" name="doubleSpinBox_5">
+     <widget class="QDoubleSpinBox" name="defect5Spin">
       <property name="geometry">
        <rect>
         <x>360</x>
@@ -925,6 +961,12 @@
         <width>71</width>
         <height>21</height>
        </rect>
+      </property>
+      <property name="maximum">
+       <double>4.000000000000000</double>
+      </property>
+      <property name="singleStep">
+       <double>0.100000000000000</double>
       </property>
      </widget>
      <widget class="QLabel" name="label_6">
@@ -960,35 +1002,62 @@
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
-        <widget class="QSlider" name="verticalSlider">
+        <widget class="QSlider" name="defect1Slider">
+         <property name="maximum">
+          <number>500</number>
+         </property>
+         <property name="singleStep">
+          <number>1</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="invertedControls">
+          <bool>false</bool>
+         </property>
+         <property name="tickPosition">
+          <enum>QSlider::NoTicks</enum>
+         </property>
+         <property name="tickInterval">
+          <number>25</number>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QSlider" name="defect2Slider">
+         <property name="maximum">
+          <number>400</number>
+         </property>
          <property name="orientation">
           <enum>Qt::Vertical</enum>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QSlider" name="verticalSlider_2">
+        <widget class="QSlider" name="defect3Slider">
+         <property name="maximum">
+          <number>400</number>
+         </property>
          <property name="orientation">
           <enum>Qt::Vertical</enum>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QSlider" name="verticalSlider_3">
+        <widget class="QSlider" name="defect4Slider">
+         <property name="maximum">
+          <number>300</number>
+         </property>
          <property name="orientation">
           <enum>Qt::Vertical</enum>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QSlider" name="verticalSlider_4">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
+        <widget class="QSlider" name="defect5Slider">
+         <property name="maximum">
+          <number>400</number>
          </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QSlider" name="verticalSlider_5">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
          </property>
