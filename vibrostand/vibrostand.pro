@@ -22,7 +22,7 @@ SOURCES += main.cpp\
 	qcustomplot.cpp\
 	complex.cpp\
 	fft.cpp \
-    bearing.cpp
+	bearing.cpp
 
 LIBS += -L$$PWD/aquila-lib/lib -lAquila
 
@@ -31,8 +31,9 @@ HEADERS  += mainwindow.h \
 	qcustomplot.h\
 	complex.h\
 	fft.h \
-    bearing.h
+	bearing.h \
+	ffft/* \
 
 FORMS    += \
 	mainwindow_windows.ui \
-    mainwindow96dpi.ui
+	mainwindow96dpi.ui

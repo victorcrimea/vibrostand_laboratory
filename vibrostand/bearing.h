@@ -18,6 +18,8 @@
 //#include "fft.h"
 //#include <kfr/dft.hpp>
 
+#include "ffft/FFTReal.h"
+
 //using namespace kfr;
 
 class Bearing : QObject {
@@ -65,6 +67,12 @@ public:
 	 */
 	const QVector<double> &getSpectrum() const;
 
+	/**
+	 * @brief getSpectrum provides spectrum representation of simulated bearing
+	 * @return
+	 */
+	const QVector<double> &getSpectrumGood() const;
+
 	void setDefect(DefectType type, double severity);
 	void setDiscrFreq(int frequency);
 	void setStepDuration(double duration);
@@ -105,7 +113,7 @@ protected:
 
 	QMap<DefectType, double> defects;
 
-	void applyDefects(QVector<double> vibration);
+	void applyDefects();
 	void generateVibration();
 	void calculateSpectrum();
 

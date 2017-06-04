@@ -28,8 +28,9 @@ MainWindow::MainWindow(QWidget *parent)
 	histLen = 700;
 	inputSignalPlot->setOpenGl(false);
 	signalHist->setOpenGl(false);
+	signalSpectrum->setOpenGl(false);
 
-	bearing.setDiscrFreq(10240);
+	bearing.setDiscrFreq(40960);
 	bearing.setDesiredRPM(5000);
 	bearing.setStepDuration(duration);
 	bearing.nextStep();
@@ -38,7 +39,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 	QTimer *timer = new QTimer(this);
 	connect(timer, SIGNAL(timeout()), this, SLOT(redrawPlot()));
-	const int fps = 240;
+	const int fps = 16;
 	timer->start(1000 / fps);
 }
 
@@ -52,6 +53,7 @@ void MainWindow::on_exit_triggered() {
 
 void MainWindow::drawPlot() {
 	auto signal = bearing.getVibration();
+	auto signalGood = bearing.getVibrationGood();
 	auto x = QVector<double>(signal.length());
 	for (int i = 0; i < signal.length(); ++i) {
 		x[i] = i;
@@ -60,10 +62,14 @@ void MainWindow::drawPlot() {
 	qDebug() << "xSize: " << x.size();
 	qDebug() << "signalSize: " << signal.size();
 
+	inputSignalPlot->setBackground(Qt::lightGray);
 	inputSignalPlot->addGraph();
-	inputSignalPlot->setBackground(Qt::black);
-	//inputSignalPlot->graph(0)->setBrush(QBrush(QColor(255, 0, 255, 20)));
-	inputSignalPlot->graph(0)->setPen(QPen(Qt::green, 0.5));
+	inputSignalPlot->axisRect()->setBackground(Qt::black);
+
+	inputSignalPlot->graph(0)->setPen(QPen(Qt::yellow, 0.5));
+
+	inputSignalPlot->addGraph();
+	inputSignalPlot->graph(1)->setPen(QPen(Qt::green, 0.5));
 	inputSignalPlot->xAxis->setRange(0, signal.length());
 	inputSignalPlot->xAxis->setLabel("Входной вибросигнал, ceк");
 	inputSignalPlot->yAxis->setRange(-5, 5);
@@ -71,14 +77,21 @@ void MainWindow::drawPlot() {
 	inputSignalPlot->replot();
 
 	// Probability histogram
+	signalHist->setBackground(Qt::lightGray);
+	signalHist->axisRect()->setBackground(Qt::black);
 	signalHist->addGraph();
-	signalHist->xAxis->setLabel("Гистограмма");
+	signalHist->xAxis->setLabel("АЧХ фильтра");
 	signalHist->replot();
 
 	// Signal spectum
+	signalSpectrum->setBackground(Qt::lightGray);
+	signalSpectrum->axisRect()->setBackground(Qt::black);
 	signalSpectrum->addGraph();
-	signalSpectrum->xAxis->setRange(0, signal.length());
-	signalSpectrum->yAxis->setRange(0, 550);
+	signalSpectrum->addGraph();
+	signalSpectrum->graph(0)->setPen(QPen(Qt::yellow, 0.5));
+	signalSpectrum->graph(1)->setPen(QPen(Qt::green, 0.5));
+	signalSpectrum->xAxis->setRange(0, signal.length() / 2);
+	signalSpectrum->yAxis->setRange(-80, 10);
 	signalSpectrum->xAxis->setLabel("Спектр вибросигнала, Hz");
 	signalSpectrum->yAxis->setLabel("dB");
 	signalSpectrum->replot();
@@ -130,13 +143,16 @@ QVector<double> MainWindow::hist(int histLength, const QVector<double> &data) {
 
 void MainWindow::replotSignal() {
 	auto signal = bearing.getVibration();
+	auto signalGood = bearing.getVibrationGood();
 	auto x = QVector<double>(signal.length());
+
 	for (int i = 0; i < signal.length(); ++i) {
-		x[i] = i;
+		x[i] = i * (duration / signal.length());
 	}
 
-	inputSignalPlot->xAxis->setRange(0, signal.length());
+	inputSignalPlot->xAxis->setRange(0, duration);
 	inputSignalPlot->graph(0)->setData(x, signal, true);
+	inputSignalPlot->graph(1)->setData(x, signalGood, true);
 	inputSignalPlot->replot();
 }
 
@@ -158,13 +174,15 @@ void MainWindow::replotHist(const QVector<double> &signal) {
 void MainWindow::replotSpectrum() {
 
 	auto spectrum = bearing.getSpectrum();
+	auto spectrumGood = bearing.getSpectrumGood();
 	auto x = QVector<double>(spectrum.length());
 	for (int i = 0; i < spectrum.length(); ++i) {
-		x[i] = i;
+		x[i] = i * (spectrum.length() * 4 / 1000.0);
 	}
 
 	signalSpectrum->xAxis->setRange(0, spectrum.length());
 	signalSpectrum->graph(0)->setData(x, spectrum, true);
+	signalSpectrum->graph(1)->setData(x, spectrumGood, true);
 	signalSpectrum->replot();
 }
 
@@ -189,23 +207,33 @@ void MainWindow::on_shaft_rpm_editingFinished() {
 }
 
 void MainWindow::on_defect1Slider_valueChanged(int value) {
-	ui->defect1Spin->setValue(value / 100.0);
+	double severity = value / 100.0;
+	ui->defect1Spin->setValue(severity);
+	this->bearing.setDefect(Bearing::DefectType::DEFECT_1, severity);
 }
 
 void MainWindow::on_defect2Slider_valueChanged(int value) {
-	ui->defect2Spin->setValue(value / 100.0);
+	double severity = value / 100.0;
+	ui->defect2Spin->setValue(severity);
+	this->bearing.setDefect(Bearing::DefectType::DEFECT_2, severity);
 }
 
 void MainWindow::on_defect3Slider_valueChanged(int value) {
-	ui->defect3Spin->setValue(value / 100.0);
+	double severity = value / 100.0;
+	ui->defect3Spin->setValue(severity);
+	this->bearing.setDefect(Bearing::DefectType::DEFECT_3, severity);
 }
 
 void MainWindow::on_defect4Slider_valueChanged(int value) {
-	ui->defect4Spin->setValue(value / 100.0);
+	double severity = value / 100.0;
+	ui->defect4Spin->setValue(severity);
+	this->bearing.setDefect(Bearing::DefectType::DEFECT_4, severity);
 }
 
 void MainWindow::on_defect5Slider_valueChanged(int value) {
-	ui->defect5Spin->setValue(value / 100.0);
+	double severity = value / 100.0;
+	ui->defect5Spin->setValue(severity);
+	this->bearing.setDefect(Bearing::DefectType::DEFECT_5, severity);
 }
 
 void MainWindow::on_defect1Spin_valueChanged(double arg1) {
