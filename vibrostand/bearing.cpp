@@ -39,18 +39,6 @@ const QVector<double> &Bearing::getVibration() const {
 	return vibration;
 }
 
-const QVector<double> &Bearing::getVibrationGood() const {
-	return vibrationGood;
-}
-
-const QVector<double> &Bearing::getSpectrum() const {
-	return spectrum;
-}
-
-const QVector<double> &Bearing::getSpectrumGood() const {
-	return spectrumGood;
-}
-
 void Bearing::setDefect(Bearing::DefectType type, double severity) {
 	defects[type] = severity;
 }
@@ -74,7 +62,6 @@ int Bearing::getDiscrFreq() const {
 
 void Bearing::nextStep() {
 	generateVibration();
-	calculateSpectrum();
 }
 
 void Bearing::setDesiredRPM(int desiredRPM) {
@@ -125,20 +112,10 @@ void Bearing::generateVibration() {
 	//std::normal_distribution<double> d(0, 1);
 	std::normal_distribution<double> d(0, 1);
 
-	vibrationGood.resize(realisationLength);
+	vibration.resize(realisationLength);
 	for (size_t i = 0; i < realisationLength; ++i) {
-		vibrationGood[i] = d(gen);
+		vibration[i] = d(gen);
 	}
-
-	//	double omega = (realShaftRPM / 60.0) * 2 * M_PI;
-
-	vibration = QVector<double>(vibrationGood);
-	//	qDebug() << "Duration = " << stepDuration << "; dt= " << dt << "; omega=" << omega;
-	//	for (size_t i = 0; i < realisationLength; ++i) {
-	//		//vibration->append(sin(fmod((omega * dt * i), 360) * M_PI / 180));
-
-	//		vibration[i] += sin(omega * dt * i);
-	//	}
 
 	qDebug() << "vibration.length()" << vibration.length();
 
@@ -147,75 +124,6 @@ void Bearing::generateVibration() {
 
 	qDebug() << "Bearing RPM: " << realShaftRPM;
 	//this->vibration = vibration;
-}
-
-void Bearing::calculateSpectrum() {
-	size_t vibrationLength = vibration.length();
-
-	ffft::FFTReal<double> fft_object(vibrationLength);
-
-	// Allocate memory for signal data
-	double *pSignal = new double[vibrationLength];
-	double *pSpectrum = new double[vibrationLength];
-
-	// Fill signal array with data
-	for (int i = 0; i < vibrationLength; ++i) {
-		pSignal[i] = vibration.at(i);
-	}
-
-	// Apply FFT
-	//CFFT::Forward(pSignal, vibrationLength * 2);
-	fft_object.do_fft(pSpectrum, pSignal);
-
-	// Utilize transform result
-	//auto spectrum = make_shared<QVector<double>>(vibration.length());
-
-	spectrum.resize(vibrationLength / 2);
-
-	for (int i = 2; i <= vibrationLength / 2 - 1; ++i) {
-		int spectrum_i = i - 2;
-		double real = pSpectrum[i];
-		double imag = 0.0;
-		if (i > 0 && i < vibrationLength - 1)
-			imag = pSpectrum[(vibrationLength) / 2 + i];
-		spectrum[spectrum_i] = sqrt(real * real + imag * imag);
-		if (spectrum[spectrum_i] == 0)
-			spectrum[spectrum_i] = 0.0001;
-		spectrum[spectrum_i] = -100 + 20 * log10(spectrum[spectrum_i]);
-	}
-
-	//==================== Spectrum good =================================
-	//====================================================================
-
-	// Fill signal array with data
-	for (int i = 0; i < vibrationGood.length(); ++i) {
-		pSignal[i] = vibrationGood.at(i);
-	}
-
-	// Apply FFT
-	//CFFT::Forward(pSignal, vibrationGood.length() * 2);
-	fft_object.do_fft(pSpectrum, pSignal);
-
-	// Utilize transform result
-	//auto spectrum = make_shared<QVector<double>>(vibration.length());
-
-	spectrumGood.resize(vibrationLength / 2);
-
-	for (int i = 2; i <= vibrationLength / 2 - 1; ++i) {
-		int spectrum_i = i - 2;
-		double real = pSpectrum[i];
-		double imag = 0.0;
-		if (i > 0 && i < vibrationLength - 1)
-			imag = pSpectrum[(vibrationLength) / 2 + i];
-		spectrumGood[spectrum_i] = sqrt(real * real + imag * imag);
-		if (spectrumGood[spectrum_i] == 0)
-			spectrumGood[spectrum_i] = 0.0001;
-		spectrumGood[spectrum_i] = -100 + 20 * log10(spectrumGood[spectrum_i]);
-	}
-
-	// Free memory
-	delete[] pSignal;
-	delete[] pSpectrum;
 }
 
 void Bearing::calculateSpectrumKFR() {

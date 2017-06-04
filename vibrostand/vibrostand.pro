@@ -20,19 +20,21 @@ INCLUDEPATH += $$PWD/aquila-lib/include
 SOURCES += main.cpp\
 		mainwindow.cpp \
 	qcustomplot.cpp\
-	complex.cpp\
-	fft.cpp \
-	bearing.cpp
+	bearing.cpp \
+	spectumanalyzer.cpp \
+	filter/filt.cpp \
+    windowfilter.cpp
 
 LIBS += -L$$PWD/aquila-lib/lib -lAquila
 
 
 HEADERS  += mainwindow.h \
 	qcustomplot.h\
-	complex.h\
-	fft.h \
 	bearing.h \
 	ffft/* \
+	spectumanalyzer.h \
+	filter/filt.h \
+    windowfilter.h
 
 FORMS    += \
 	mainwindow_windows.ui \

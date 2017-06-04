@@ -17,30 +17,41 @@ using std::make_unique;
 using std::make_shared;
 
 MainWindow::MainWindow(QWidget *parent)
-	: QMainWindow(parent), ui(new Ui::MainWindow) {
+	: QMainWindow(parent), ui(new Ui::MainWindow), analyzer(dF, duration * dF), replotTimer(this) {
 	ui->setupUi(this);
 
-	signalHist = ui->signal_hist;
+	filterFr = ui->filter_FR;
+	filterFrBig = ui->filter_FR_big;
 	inputSignalPlot = ui->input_signal;
 	signalSpectrum = ui->signal_spectrum;
-	//realisationLength = 1;
-	duration = 0.1;
-	histLen = 700;
-	inputSignalPlot->setOpenGl(false);
-	signalHist->setOpenGl(false);
-	signalSpectrum->setOpenGl(false);
+	signalSpectrumBig = ui->signal_spectrum_big;
 
-	bearing.setDiscrFreq(40960);
-	bearing.setDesiredRPM(5000);
-	bearing.setStepDuration(duration);
-	bearing.nextStep();
+	//Disable OpenGl rendering
+	inputSignalPlot->setOpenGl(false);
+	filterFr->setOpenGl(false);
+	filterFrBig->setOpenGl(false);
+	signalSpectrum->setOpenGl(false);
+	signalSpectrumBig->setOpenGl(false);
+
+	//Set bearings' parameters
+	bearingA.setDiscrFreq(dF);
+	bearingA.setDesiredRPM(ui->shaft_rpm->value());
+	bearingA.setStepDuration(duration);
+	bearingA.nextStep();
+
+	bearingB.setDiscrFreq(dF);
+	bearingB.setDesiredRPM(ui->shaft_rpm->value());
+	bearingB.setStepDuration(duration);
+	bearingB.nextStep();
+
+	filter.setHighCutoffFrequency(ui->high_cutoff->value());
+	filter.setSamplingFrequency(dF);
 
 	drawPlot();
 
-	QTimer *timer = new QTimer(this);
-	connect(timer, SIGNAL(timeout()), this, SLOT(redrawPlot()));
-	const int fps = 16;
-	timer->start(1000 / fps);
+	connect(&replotTimer, SIGNAL(timeout()), this, SLOT(redrawPlot()));
+	const int fps = ui->desiredFPS->value();
+	replotTimer.start(1000 / fps);
 }
 
 MainWindow::~MainWindow() {
@@ -52,8 +63,7 @@ void MainWindow::on_exit_triggered() {
 }
 
 void MainWindow::drawPlot() {
-	auto signal = bearing.getVibration();
-	auto signalGood = bearing.getVibrationGood();
+	auto signal = bearingA.getVibration();
 	auto x = QVector<double>(signal.length());
 	for (int i = 0; i < signal.length(); ++i) {
 		x[i] = i;
@@ -76,12 +86,20 @@ void MainWindow::drawPlot() {
 	inputSignalPlot->yAxis->setLabel("mV");
 	inputSignalPlot->replot();
 
-	// Probability histogram
-	signalHist->setBackground(Qt::lightGray);
-	signalHist->axisRect()->setBackground(Qt::black);
-	signalHist->addGraph();
-	signalHist->xAxis->setLabel("АЧХ фильтра");
-	signalHist->replot();
+	// Filter frequency response
+	filterFr->setBackground(Qt::lightGray);
+	filterFr->axisRect()->setBackground(Qt::black);
+	filterFr->addGraph();
+	filterFr->graph(0)->setPen(QPen(Qt::green, 0.5));
+	filterFr->xAxis->setLabel("АЧХ фильтра");
+	filterFr->replot();
+
+	filterFrBig->setBackground(Qt::lightGray);
+	filterFrBig->axisRect()->setBackground(Qt::black);
+	filterFrBig->addGraph();
+	filterFrBig->graph(0)->setPen(QPen(Qt::green, 0.5));
+	filterFrBig->xAxis->setLabel("АЧХ фильтра");
+	filterFrBig->replot();
 
 	// Signal spectum
 	signalSpectrum->setBackground(Qt::lightGray);
@@ -90,15 +108,27 @@ void MainWindow::drawPlot() {
 	signalSpectrum->addGraph();
 	signalSpectrum->graph(0)->setPen(QPen(Qt::yellow, 0.5));
 	signalSpectrum->graph(1)->setPen(QPen(Qt::green, 0.5));
-	signalSpectrum->xAxis->setRange(0, signal.length() / 2);
 	signalSpectrum->yAxis->setRange(-80, 10);
+	signalSpectrum->xAxis->setRange(ui->left_bound->value(), ui->right_bound->value());
 	signalSpectrum->xAxis->setLabel("Спектр вибросигнала, Hz");
 	signalSpectrum->yAxis->setLabel("dB");
 	signalSpectrum->replot();
 
+	signalSpectrumBig->setBackground(Qt::lightGray);
+	signalSpectrumBig->axisRect()->setBackground(Qt::black);
+	signalSpectrumBig->addGraph();
+	signalSpectrumBig->addGraph();
+	signalSpectrumBig->graph(0)->setPen(QPen(Qt::yellow, 0.5));
+	signalSpectrumBig->graph(1)->setPen(QPen(Qt::green, 0.5));
+	signalSpectrumBig->yAxis->setRange(-80, 10);
+	signalSpectrumBig->xAxis->setRange(ui->left_bound->value(), ui->right_bound->value());
+	signalSpectrumBig->xAxis->setLabel("Спектр вибросигнала, Hz");
+	signalSpectrumBig->yAxis->setLabel("dB");
+	signalSpectrumBig->replot();
+
 	// Actual plotting
 	replotSignal();
-	//replotHist(signal);
+	replotFR();
 	replotSpectrum();
 }
 
@@ -117,73 +147,80 @@ void MainWindow::redrawPlot() {
 	}
 
 	replotSignal();
-	//replotHist(signal);
+	replotFR();
 	replotSpectrum();
 
 	//Ask bearing to generate next frame of data
-	bearing.nextStep();
+	bearingA.nextStep();
+	bearingB.nextStep();
 }
 
 void MainWindow::on_actionRegenerate_signal_triggered() {
 	drawPlot();
 }
 
-QVector<double> MainWindow::hist(int histLength, const QVector<double> &data) {
-	QVector<double> hist(histLength);
-	for (int i = 0; i < data.length(); ++i) {
-		int index = round(data[i] * 100) + histLength / 2;
-		if (index < 0 || index >= histLength) {
-			// printf("%f \n", index);
-			continue;
-		}
-		hist[index] += 1;
-	}
-	return hist;
-}
-
 void MainWindow::replotSignal() {
-	auto signal = bearing.getVibration();
-	auto signalGood = bearing.getVibrationGood();
-	auto x = QVector<double>(signal.length());
+	if (ui->tabWidget->currentIndex() == 0) {
+		auto signal = bearingA.getVibration();
+		auto signalGood = bearingB.getVibration();
+		auto x = QVector<double>(signal.length());
 
-	for (int i = 0; i < signal.length(); ++i) {
-		x[i] = i * (duration / signal.length());
+		for (int i = 0; i < signal.length(); ++i) {
+			x[i] = i * (duration / signal.length());
+		}
+
+		inputSignalPlot->xAxis->setRange(0, duration);
+		inputSignalPlot->graph(0)->setData(x, signal, true);
+		inputSignalPlot->graph(1)->setData(x, signalGood, true);
+		inputSignalPlot->replot();
 	}
-
-	inputSignalPlot->xAxis->setRange(0, duration);
-	inputSignalPlot->graph(0)->setData(x, signal, true);
-	inputSignalPlot->graph(1)->setData(x, signalGood, true);
-	inputSignalPlot->replot();
 }
 
-void MainWindow::replotHist(const QVector<double> &signal) {
-	// Probability histogram
-	auto yHist = hist(histLen, signal);
+void MainWindow::replotFR() {
+	if (ui->tabWidget->currentIndex() == 0 || ui->tabWidget->currentIndex() == 1) {
+		// Calculating filter frequency response
+		auto signal = bearingA.getVibration();
+		auto filtered = filter.filter(signal);
 
-	QVector<double> xhist(histLen);
-	for (int i = 0; i < histLen; ++i) {
-		xhist[i] = i;
+		auto signalSpectrum = analyzer.calculateLinear(signal);
+		auto filteredSpectrum = analyzer.calculateLinear(filtered);
+
+		QVector<double> fr;
+
+		//Calculating FR
+		for (int i = 0; i < signalSpectrum.second.length(); ++i) {
+			fr.push_back(20 * log10(filteredSpectrum.second.at(i) / signalSpectrum.second.at(i)));
+		}
+
+		if (ui->tabWidget->currentIndex() == 0) {
+			filterFr->graph(0)->setData(signalSpectrum.first, fr, true);
+			filterFr->yAxis->setRange(-40, 20);
+			filterFr->xAxis->setRange(signalSpectrum.first.first(), 20000);
+			filterFr->replot();
+		} else if (ui->tabWidget->currentIndex() == 1) {
+			filterFrBig->graph(0)->setData(signalSpectrum.first, fr, true);
+			filterFrBig->yAxis->setRange(-40, 20);
+			filterFrBig->xAxis->setRange(signalSpectrum.first.first(), 20000);
+			filterFrBig->replot();
+		}
 	}
-
-	signalHist->graph(0)->setData(xhist, yHist, true);
-	signalHist->yAxis->setRange(0, 15);
-	signalHist->xAxis->setRange(0, histLen);
-	signalHist->replot();
 }
 
 void MainWindow::replotSpectrum() {
-
-	auto spectrum = bearing.getSpectrum();
-	auto spectrumGood = bearing.getSpectrumGood();
-	auto x = QVector<double>(spectrum.length());
-	for (int i = 0; i < spectrum.length(); ++i) {
-		x[i] = i * (spectrum.length() * 4 / 1000.0);
+	if (ui->tabWidget->currentIndex() == 0 || ui->tabWidget->currentIndex() == 2) {
+		auto spectrumA = analyzer.calculate(filter.filter(bearingA.getVibration()));
+		//auto spectrum_filtered = analyzer.calculate(filter.filter(bearingA.getVibration()));
+		auto spectrumB = analyzer.calculate(filter.filter(bearingB.getVibration()));
+		if (ui->tabWidget->currentIndex() == 0) {
+			signalSpectrum->graph(0)->setData(spectrumA.first, spectrumA.second, true);
+			signalSpectrum->graph(1)->setData(spectrumB.first, spectrumB.second, true);
+			signalSpectrum->replot();
+		} else if (ui->tabWidget->currentIndex() == 2) {
+			signalSpectrumBig->graph(0)->setData(spectrumA.first, spectrumA.second, true);
+			signalSpectrumBig->graph(1)->setData(spectrumB.first, spectrumB.second, true);
+			signalSpectrumBig->replot();
+		}
 	}
-
-	signalSpectrum->xAxis->setRange(0, spectrum.length());
-	signalSpectrum->graph(0)->setData(x, spectrum, true);
-	signalSpectrum->graph(1)->setData(x, spectrumGood, true);
-	signalSpectrum->replot();
 }
 
 //Connection between dial rpm control and rpm_window
@@ -194,7 +231,8 @@ void MainWindow::on_shaft_rpm_dial_valueChanged(int value) {
 //Connection between dial rpm control and rpm_window
 void MainWindow::on_shaft_rpm_valueChanged(int value) {
 	ui->shaft_rpm_dial->setValue(value);
-	this->bearing.setDesiredRPM(value);
+	this->bearingA.setDesiredRPM(value);
+	this->bearingB.setDesiredRPM(value);
 	ui->shaft_rpm_real->display((int)(value / 60.0));
 }
 
@@ -202,38 +240,36 @@ void MainWindow::on_shaft_rpm_editingFinished() {
 	int value = 0;
 	value = ui->shaft_rpm->value();
 	ui->shaft_rpm_dial->setValue(value);
-
-	//Change desired speed of the shaft
 }
 
 void MainWindow::on_defect1Slider_valueChanged(int value) {
 	double severity = value / 100.0;
 	ui->defect1Spin->setValue(severity);
-	this->bearing.setDefect(Bearing::DefectType::DEFECT_1, severity);
+	this->bearingA.setDefect(Bearing::DefectType::DEFECT_1, severity);
 }
 
 void MainWindow::on_defect2Slider_valueChanged(int value) {
 	double severity = value / 100.0;
 	ui->defect2Spin->setValue(severity);
-	this->bearing.setDefect(Bearing::DefectType::DEFECT_2, severity);
+	this->bearingA.setDefect(Bearing::DefectType::DEFECT_2, severity);
 }
 
 void MainWindow::on_defect3Slider_valueChanged(int value) {
 	double severity = value / 100.0;
 	ui->defect3Spin->setValue(severity);
-	this->bearing.setDefect(Bearing::DefectType::DEFECT_3, severity);
+	this->bearingA.setDefect(Bearing::DefectType::DEFECT_3, severity);
 }
 
 void MainWindow::on_defect4Slider_valueChanged(int value) {
 	double severity = value / 100.0;
 	ui->defect4Spin->setValue(severity);
-	this->bearing.setDefect(Bearing::DefectType::DEFECT_4, severity);
+	this->bearingA.setDefect(Bearing::DefectType::DEFECT_4, severity);
 }
 
 void MainWindow::on_defect5Slider_valueChanged(int value) {
 	double severity = value / 100.0;
 	ui->defect5Spin->setValue(severity);
-	this->bearing.setDefect(Bearing::DefectType::DEFECT_5, severity);
+	this->bearingA.setDefect(Bearing::DefectType::DEFECT_5, severity);
 }
 
 void MainWindow::on_defect1Spin_valueChanged(double arg1) {
@@ -257,5 +293,97 @@ void MainWindow::on_defect5Spin_valueChanged(double arg1) {
 }
 
 void MainWindow::on_discr_freq_valueChanged(int arg1) {
-	bearing.setDiscrFreq(arg1);
+	bearingA.setDiscrFreq(arg1);
+	bearingB.setDiscrFreq(arg1);
+}
+
+void MainWindow::on_desiredFPS_valueChanged(int arg1) {
+	if (arg1 == 0) {
+		replotTimer.stop();
+	} else {
+		replotTimer.setInterval(1000 / arg1);
+		replotTimer.start();
+	}
+}
+
+void MainWindow::on_left_bound_valueChanged(int leftBound) {
+
+	int rightBound = ui->right_bound->value();
+
+	if (rightBound < leftBound) {
+		leftBound = rightBound;
+		ui->left_bound->setValue(leftBound);
+	}
+	signalSpectrum->xAxis->setRange(leftBound, rightBound);
+	signalSpectrumBig->xAxis->setRange(leftBound, rightBound);
+}
+
+void MainWindow::on_right_bound_valueChanged(int rightBound) {
+	int leftBound = ui->left_bound->value();
+
+	if (rightBound < leftBound) {
+		rightBound = leftBound;
+		ui->right_bound->setValue(rightBound);
+	}
+
+	signalSpectrum->xAxis->setRange(leftBound, rightBound);
+	signalSpectrumBig->xAxis->setRange(leftBound, rightBound);
+}
+
+void MainWindow::on_high_cutoff_valueChanged(int arg1) {
+	filter.setHighCutoffFrequency(arg1);
+}
+
+void MainWindow::on_spinBox_valueChanged(int arg1) {
+	filter.setLevel(arg1);
+}
+
+void MainWindow::on_comboBox_3_currentIndexChanged(const QString &arg1) {
+
+	auto lowCutoff = manageCutoff().first;
+	auto highCutoff = manageCutoff().second;
+
+	if (arg1 == "Lowpass") {
+		filter.setHighCutoffFrequency(highCutoff);
+		filter.setType(LPF);
+		ui->low_cutoff->setEnabled(false);
+		ui->high_cutoff->setEnabled(true);
+	} else if (arg1 == "Highpass") {
+		filter.setLowCutoffFrequency(lowCutoff);
+		filter.setType(HPF);
+		ui->low_cutoff->setEnabled(true);
+		ui->high_cutoff->setEnabled(false);
+	} else if (arg1 == "Passband") {
+		filter.setLowCutoffFrequency(lowCutoff);
+		filter.setHighCutoffFrequency(highCutoff);
+		filter.setType(BPF);
+		ui->low_cutoff->setEnabled(true);
+		ui->high_cutoff->setEnabled(true);
+	}
+}
+
+void MainWindow::on_low_cutoff_valueChanged(int arg1) {
+	filter.setLowCutoffFrequency(arg1);
+}
+
+QPair<int, int> MainWindow::manageCutoff() {
+	auto lowCutoff = ui->low_cutoff->value();
+	auto highCutoff = ui->high_cutoff->value();
+
+	if (lowCutoff >= highCutoff) {
+		lowCutoff = highCutoff - 1;
+		ui->low_cutoff->setValue(lowCutoff);
+	}
+
+	return QPair<int, int>(lowCutoff, highCutoff);
+}
+
+void MainWindow::on_left_bound_2_valueChanged(int arg1) {
+	ui->left_bound->setValue(arg1);
+	on_left_bound_valueChanged(arg1);
+}
+
+void MainWindow::on_right_bound_2_valueChanged(int arg1) {
+	ui->right_bound->setValue(arg1);
+	on_right_bound_valueChanged(arg1);
 }
