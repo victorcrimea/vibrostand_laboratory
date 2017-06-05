@@ -17,12 +17,12 @@ using std::make_unique;
 using std::make_shared;
 
 MainWindow::MainWindow(QWidget *parent)
-	: QMainWindow(parent),
-	  ui(new Ui::MainWindow),
-	  analyzer(dF, duration * dF),
-	  replotTimer(this),
-	  bearingA(Bearing::BearingType::TYPE_403),
-	  bearingB(Bearing::BearingType::TYPE_403) {
+: QMainWindow(parent),
+ui(new Ui::MainWindow),
+analyzer(dF, duration * dF),
+replotTimer(this),
+bearingA(Bearing::BearingType::TYPE_403),
+bearingB(Bearing::BearingType::TYPE_403) {
 	ui->setupUi(this);
 
 	filterFr = ui->filter_FR;
@@ -101,6 +101,7 @@ void MainWindow::drawPlot() {
 	filterFr->addGraph();
 	filterFr->graph(0)->setPen(QPen(Qt::green, 0.5));
 	filterFr->xAxis->setLabel("АЧХ фильтра");
+	filterFr->yAxis->setLabel("dB");
 	filterFr->replot();
 
 	filterFrBig->setBackground(Qt::lightGray);
@@ -432,4 +433,53 @@ void MainWindow::on_bearing_type_currentIndexChanged(const QString &type) {
 	ui->z->setValue(bearingA.getBalls());
 	ui->bearing_diameter->setValue(bearingA.getDiameter());
 	ui->balls_diameter->setValue(bearingA.getBallsDiameter());
+}
+
+void MainWindow::on_pushButton_4_clicked() {
+	QString folderName = QFileDialog::getExistingDirectory(this, tr("Выберите папку для сохранения"), "", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+	ui->target_folder->setText(folderName);
+}
+
+void MainWindow::on_save_file_clicked() {
+	//Target folder path
+	auto folder = ui->target_folder->text();
+
+	//Number of files to generate
+	auto num = ui->number_of_files->value();
+
+	auto referencePrefix = "/" + ui->reference_bearing_prefix->text();
+	auto diagPrefix = "/" + ui->diag_bearing_prefix->text();
+
+	for (int i = 0; i < num; ++i) {
+		//Get vibration vector
+		bearingA.nextStep();
+		auto vibrationA = bearingA.getVibration();
+
+		bearingB.nextStep();
+		auto vibrationB = bearingB.getVibration();
+
+		//Create file diag
+		QFile fileOut(folder + diagPrefix + QString::number(i) + ".txt");
+		if (fileOut.open(QIODevice::WriteOnly | QIODevice::Text)) {
+			QTextStream out(&fileOut);
+			for (double &sample : vibrationA) {
+				out << sample << endl;
+			}
+		}
+		fileOut.close();
+
+		//Create file diag
+		fileOut.setFileName(folder + referencePrefix + QString::number(i) + ".txt");
+		if (fileOut.open(QIODevice::WriteOnly | QIODevice::Text)) {
+			QTextStream out(&fileOut);
+			for (double &sample : vibrationB) {
+				out << sample << endl;
+			}
+		}
+		fileOut.close();
+	}
+}
+
+void MainWindow::on_pushButton_2_clicked() {
+	ui->tabWidget->setCurrentIndex(3);
 }

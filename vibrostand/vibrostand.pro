@@ -26,6 +26,9 @@ win32 {
 	LIBS += -lglu32 -lopengl32
 }
 
+!win32 {
+	LIBS += -lglut
+}
 
 HEADERS  += mainwindow.h \
 	qcustomplot.h\

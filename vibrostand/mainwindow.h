@@ -1,10 +1,11 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <QFileDialog>
 #include <QMainWindow>
-#include <algorithm>
-
 #include <QVector>
+
+#include <algorithm>
 #include <functional> //std::bind
 #include <thread>     // std::thread
 
@@ -89,6 +90,12 @@ private slots:
 	void on_about_triggered();
 
 	void on_bearing_type_currentIndexChanged(const QString &arg1);
+
+	void on_pushButton_4_clicked();
+
+	void on_save_file_clicked();
+
+	void on_pushButton_2_clicked();
 
 private:
 	Ui::MainWindow *ui;
