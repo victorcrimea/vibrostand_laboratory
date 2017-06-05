@@ -462,6 +462,12 @@ void MainWindow::on_save_file_clicked() {
 		QFile fileOut(folder + diagPrefix + QString::number(i) + ".txt");
 		if (fileOut.open(QIODevice::WriteOnly | QIODevice::Text)) {
 			QTextStream out(&fileOut);
+			out << bearingA.getRPM() / 60.0 << endl;
+			out << bearingA.getBalls() * 1.0 << endl;
+			out << bearingA.getDiameter() * 1.0 << endl;
+			out << bearingA.getBallsDiameter() * 1.0 << endl;
+			out << (double)bearingA.getDiscrFreq() / (double)vibrationA.length() << endl;
+
 			for (double &sample : vibrationA) {
 				out << sample << endl;
 			}
@@ -472,6 +478,11 @@ void MainWindow::on_save_file_clicked() {
 		fileOut.setFileName(folder + referencePrefix + QString::number(i) + ".txt");
 		if (fileOut.open(QIODevice::WriteOnly | QIODevice::Text)) {
 			QTextStream out(&fileOut);
+			out << bearingB.getRPM() / 60.0 << endl;
+			out << bearingB.getBalls() * 1.0 << endl;
+			out << bearingB.getDiameter() * 1.0 << endl;
+			out << bearingB.getBallsDiameter() * 1.0 << endl;
+			out << (double)bearingB.getDiscrFreq() / (double)vibrationB.length() << endl;
 			for (double &sample : vibrationB) {
 				out << sample << endl;
 			}
