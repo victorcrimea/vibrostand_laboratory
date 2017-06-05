@@ -22,6 +22,9 @@ SOURCES += main.cpp\
 	windowfilter.cpp \
 	aboutwindow.cpp
 
+win32 {
+	LIBS += -lglu32 -lopengl32
+}
 
 
 HEADERS  += mainwindow.h \
