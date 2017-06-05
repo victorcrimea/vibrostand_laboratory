@@ -2,7 +2,6 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QtCharts>
 #include <algorithm>
 
 #include <QVector>
@@ -14,11 +13,6 @@
 #include "qcustomplot.h"
 #include "spectumanalyzer.h"
 #include "windowfilter.h"
-
-//#include <kfr/dft.hpp>
-//using namespace kfr;
-
-QT_CHARTS_USE_NAMESPACE
 
 namespace Ui {
 class MainWindow;
