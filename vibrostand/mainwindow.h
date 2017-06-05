@@ -9,8 +9,8 @@
 #include <functional> //std::bind
 #include <thread>     // std::thread
 
+#include "aboutwindow.h"
 #include "bearing.h"
-//#include "fft.h"
 #include "qcustomplot.h"
 #include "spectumanalyzer.h"
 #include "windowfilter.h"
@@ -87,6 +87,14 @@ private slots:
 	void on_left_bound_2_valueChanged(int arg1);
 
 	void on_right_bound_2_valueChanged(int arg1);
+
+	void on_low_cutoff_editingFinished();
+
+	void on_high_cutoff_editingFinished();
+
+	void on_about_triggered();
+
+	void on_bearing_type_currentIndexChanged(const QString &arg1);
 
 private:
 	Ui::MainWindow *ui;

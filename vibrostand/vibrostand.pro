@@ -14,18 +14,15 @@ CONFIG += c++14
 
 DEFINES += QCUSTOMPLOT_USE_OPENGL
 
-INCLUDEPATH += $$PWD/kfr/include
-INCLUDEPATH += $$PWD/aquila-lib/include
-
 SOURCES += main.cpp\
 		mainwindow.cpp \
 	qcustomplot.cpp\
 	bearing.cpp \
 	spectumanalyzer.cpp \
 	filter/filt.cpp \
-    windowfilter.cpp
+	windowfilter.cpp \
+	aboutwindow.cpp
 
-LIBS += -L$$PWD/aquila-lib/lib -lAquila
 
 
 HEADERS  += mainwindow.h \
@@ -34,8 +31,10 @@ HEADERS  += mainwindow.h \
 	ffft/* \
 	spectumanalyzer.h \
 	filter/filt.h \
-    windowfilter.h
+	windowfilter.h \
+	aboutwindow.h
 
 FORMS    += \
 	mainwindow_windows.ui \
-	mainwindow96dpi.ui
+	mainwindow96dpi.ui \
+	aboutwindow.ui

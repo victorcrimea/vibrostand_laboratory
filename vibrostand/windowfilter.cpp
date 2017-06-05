@@ -80,7 +80,7 @@ void WindowFilter::reloadFilter() {
 	if (type == LPF) {
 		filt = new Filter(type, level, (double)samplingFrequency / 1000.0, (double)highCutoffFrequecy / 1000.0);
 	} else if (type == HPF) {
-		filt = new Filter(type, level, (double)samplingFrequency / 1000.0, (double)lowCutoffFrequency / 1000.0);
+		filt = new Filter(BPF, level, (double)samplingFrequency / 1000.0, (double)lowCutoffFrequency / 1000.0, ((double)samplingFrequency / 2000.0) - 0.01);
 	} else if (type == BPF) {
 		filt = new Filter(type, level, (double)samplingFrequency / 1000.0, (double)lowCutoffFrequency / 1000.0, (double)highCutoffFrequecy / 1000.0);
 	}

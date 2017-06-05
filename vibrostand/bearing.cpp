@@ -2,23 +2,8 @@
 
 Bearing::Bearing(Bearing::BearingType type) {
 	qDebug() << "Bearing(Bearing::BearingType type)";
-	switch (type) {
-	case Bearing::BearingType::TYPE_403:
-		diameter = 45.00;
-		balls = 6;
-		ballsDiameter = 12.7;
-		break;
-	case Bearing::BearingType::TYPE_405:
-		diameter = 55.00;
-		balls = 6;
-		ballsDiameter = 16.67;
-		break;
-	case Bearing::BearingType::TYPE_406:
-		diameter = 60.00;
-		balls = 6;
-		ballsDiameter = 19.05;
-		break;
-	}
+
+	changeType(type);
 
 	realShaftRPM = 0;
 	desiredShaftRPM = 0;
@@ -29,6 +14,26 @@ Bearing::Bearing(Bearing::BearingType type) {
 
 Bearing::Bearing() {
 	Bearing(BearingType::TYPE_405);
+}
+
+void Bearing::changeType(Bearing::BearingType type) {
+	switch (type) {
+	case Bearing::BearingType::TYPE_403:
+		diameter = 45.00;
+		balls = 6.0;
+		ballsDiameter = 12.7;
+		break;
+	case Bearing::BearingType::TYPE_405:
+		diameter = 55.00;
+		balls = 6.0;
+		ballsDiameter = 16.67;
+		break;
+	case Bearing::BearingType::TYPE_406:
+		diameter = 60.00;
+		balls = 6.0;
+		ballsDiameter = 19.05;
+		break;
+	}
 }
 
 int Bearing::getRPM() const {
@@ -72,34 +77,65 @@ void Bearing::setDesiredRPM(int desiredRPM) {
 void Bearing::calculateRPM() {
 }
 
+double Bearing::getBallsDiameter() const {
+	return ballsDiameter;
+}
+
+int Bearing::getBalls() const {
+	return balls;
+}
+
+double Bearing::getDiameter() const {
+	return diameter;
+}
+
 void Bearing::applyDefects() {
-	//DEFECT_1
+	//	//Defects' frequencies depends only on real shaft speed
+	const auto F_shaft = (realShaftRPM / 60.0);
+
+	const auto F_separator = (F_shaft / 2) * (1 - ballsDiameter / diameter);
+
+	const auto F_balls = (F_shaft / 2) * (diameter / ballsDiameter) * (1 - (ballsDiameter / diameter) * (ballsDiameter / diameter));
+
+	const auto F_outer = balls * (F_shaft / 2) * (1 - ballsDiameter / diameter);
+
+	const auto F_inner = balls * (F_shaft / 2) * (1 + ballsDiameter / diameter);
+
+	//	//DEFECT_1
+	const auto f1 = F_outer + F_separator;
+	for (int i = 0; i < vibration.length(); ++i) {
+		vibration[i] += defects[DefectType::DEFECT_1] * sin(f1 * 2 * M_PI * dt * i);
+	}
 
 	//DEFECT_2
-	double defectFrequency2 = realShaftRPM;
-	double defectAmplitude2 = VIBRATION_AMPLITUDE * defects[DefectType::DEFECT_2] * 1;
-	//QVector<double> defect2(vibration.length());
-	//Generating sine defect
-	double omega2 = (defectFrequency2 / 60.0) * 2 * M_PI;
+	const auto f21 = F_outer + F_inner;
 	for (int i = 0; i < vibration.length(); ++i) {
-		vibration[i] += defectAmplitude2 * sin(omega2 * dt * i);
-		//qDebug() << "test";
+		vibration[i] += defects[DefectType::DEFECT_2] * sin(f21 * 2 * M_PI * dt * i);
+	}
+
+	const auto f22 = (F_inner - F_separator) * balls;
+	for (int i = 0; i < vibration.length(); ++i) {
+		vibration[i] += defects[DefectType::DEFECT_2] * sin(f22 * 2 * M_PI * dt * i);
 	}
 
 	//DEFECT_3
-	double defectFrequency3 = realShaftRPM * 3;
-	double defectAmplitude3 = VIBRATION_AMPLITUDE * defects[DefectType::DEFECT_3] * 0.5;
-	//QVector<double> defect2(vibration.length());
-	//Generating sine defect
-	double omega3 = (defectFrequency3 / 60.0) * 2 * M_PI;
+	const auto f3 = F_separator + balls;
 	for (int i = 0; i < vibration.length(); ++i) {
-		vibration[i] += defectAmplitude3 * sin(omega3 * dt * i);
-		//qDebug() << "test";
+		vibration[i] += defects[DefectType::DEFECT_3] * sin(f3 * 2 * M_PI * dt * i);
 	}
 
 	//DEFECT_4
+	const auto f4 = (F_shaft - F_separator) * balls;
+	for (int i = 0; i < vibration.length(); ++i) {
+		vibration[i] += defects[DefectType::DEFECT_4] * sin(f4 * 2 * M_PI * dt * i);
+	}
 
 	//DEFECT_5
+	const auto f5 = 2 * (diameter / ballsDiameter) * (1 + ballsDiameter / diameter) + 1;
+
+	for (int i = 0; i < vibration.length(); ++i) {
+		vibration[i] += defects[DefectType::DEFECT_5] * sin(f5 * 2 * M_PI * dt * i);
+	}
 }
 
 void Bearing::generateVibration() {

@@ -39,6 +39,9 @@ public:
 
 	Bearing(BearingType type);
 	Bearing();
+
+	void changeType(BearingType type);
+
 	/**
 	 * @brief getRPM provides real rpm of the bearing shaft
 	 * @return
@@ -59,6 +62,12 @@ public:
 	int getDiscrFreq() const;
 
 	void nextStep();
+
+	double getDiameter() const;
+
+	int getBalls() const;
+
+	double getBallsDiameter() const;
 
 public slots:
 	void setDesiredRPM(int desiredRPM);

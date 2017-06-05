@@ -17,7 +17,12 @@ using std::make_unique;
 using std::make_shared;
 
 MainWindow::MainWindow(QWidget *parent)
-	: QMainWindow(parent), ui(new Ui::MainWindow), analyzer(dF, duration * dF), replotTimer(this) {
+	: QMainWindow(parent),
+	  ui(new Ui::MainWindow),
+	  analyzer(dF, duration * dF),
+	  replotTimer(this),
+	  bearingA(Bearing::BearingType::TYPE_403),
+	  bearingB(Bearing::BearingType::TYPE_403) {
 	ui->setupUi(this);
 
 	filterFr = ui->filter_FR;
@@ -46,6 +51,10 @@ MainWindow::MainWindow(QWidget *parent)
 
 	filter.setHighCutoffFrequency(ui->high_cutoff->value());
 	filter.setSamplingFrequency(dF);
+
+	ui->z->setValue(bearingA.getBalls());
+	ui->bearing_diameter->setValue(bearingA.getDiameter());
+	ui->balls_diameter->setValue(bearingA.getBallsDiameter());
 
 	drawPlot();
 
@@ -194,12 +203,12 @@ void MainWindow::replotFR() {
 
 		if (ui->tabWidget->currentIndex() == 0) {
 			filterFr->graph(0)->setData(signalSpectrum.first, fr, true);
-			filterFr->yAxis->setRange(-40, 20);
+			filterFr->yAxis->setRange(-60, 20);
 			filterFr->xAxis->setRange(signalSpectrum.first.first(), 20000);
 			filterFr->replot();
 		} else if (ui->tabWidget->currentIndex() == 1) {
 			filterFrBig->graph(0)->setData(signalSpectrum.first, fr, true);
-			filterFrBig->yAxis->setRange(-40, 20);
+			filterFrBig->yAxis->setRange(-60, 20);
 			filterFrBig->xAxis->setRange(signalSpectrum.first.first(), 20000);
 			filterFrBig->replot();
 		}
@@ -331,7 +340,6 @@ void MainWindow::on_right_bound_valueChanged(int rightBound) {
 }
 
 void MainWindow::on_high_cutoff_valueChanged(int arg1) {
-	filter.setHighCutoffFrequency(arg1);
 }
 
 void MainWindow::on_spinBox_valueChanged(int arg1) {
@@ -363,16 +371,18 @@ void MainWindow::on_comboBox_3_currentIndexChanged(const QString &arg1) {
 }
 
 void MainWindow::on_low_cutoff_valueChanged(int arg1) {
-	filter.setLowCutoffFrequency(arg1);
 }
 
 QPair<int, int> MainWindow::manageCutoff() {
 	auto lowCutoff = ui->low_cutoff->value();
 	auto highCutoff = ui->high_cutoff->value();
+	auto type = ui->comboBox_3->currentText();
 
-	if (lowCutoff >= highCutoff) {
-		lowCutoff = highCutoff - 1;
-		ui->low_cutoff->setValue(lowCutoff);
+	if (type == "Passband") {
+		if (lowCutoff >= highCutoff) {
+			lowCutoff = highCutoff - 100;
+			ui->low_cutoff->setValue(lowCutoff);
+		}
 	}
 
 	return QPair<int, int>(lowCutoff, highCutoff);
@@ -386,4 +396,40 @@ void MainWindow::on_left_bound_2_valueChanged(int arg1) {
 void MainWindow::on_right_bound_2_valueChanged(int arg1) {
 	ui->right_bound->setValue(arg1);
 	on_right_bound_valueChanged(arg1);
+}
+
+void MainWindow::on_low_cutoff_editingFinished() {
+	auto lowCutoff = manageCutoff().first;
+	auto highCutoff = manageCutoff().second;
+
+	filter.setLowCutoffFrequency(lowCutoff);
+}
+
+void MainWindow::on_high_cutoff_editingFinished() {
+	auto lowCutoff = manageCutoff().first;
+	auto highCutoff = manageCutoff().second;
+
+	filter.setHighCutoffFrequency(highCutoff);
+}
+
+void MainWindow::on_about_triggered() {
+	auto about = new AboutWindow();
+	about->show();
+}
+
+void MainWindow::on_bearing_type_currentIndexChanged(const QString &type) {
+	if (type == "403") {
+		bearingA.changeType(Bearing::BearingType::TYPE_403);
+		bearingB.changeType(Bearing::BearingType::TYPE_403);
+	} else if (type == "405") {
+		bearingA.changeType(Bearing::BearingType::TYPE_405);
+		bearingB.changeType(Bearing::BearingType::TYPE_405);
+	} else if (type == "406") {
+		bearingA.changeType(Bearing::BearingType::TYPE_406);
+		bearingB.changeType(Bearing::BearingType::TYPE_406);
+	}
+
+	ui->z->setValue(bearingA.getBalls());
+	ui->bearing_diameter->setValue(bearingA.getDiameter());
+	ui->balls_diameter->setValue(bearingA.getBallsDiameter());
 }
