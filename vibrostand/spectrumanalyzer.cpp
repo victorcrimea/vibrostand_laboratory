@@ -1,7 +1,7 @@
-#include "spectumanalyzer.h"
+#include "spectrumanalyzer.h"
 
 SpectumAnalyzer::SpectumAnalyzer(int dF, int realisationLength)
-	: fft(realisationLength), realisationLength(realisationLength), dF(dF) {
+: fft(realisationLength), realisationLength(realisationLength), dF(dF) {
 }
 
 Spectrum SpectumAnalyzer::calculate(const QVector<double> &signal) {

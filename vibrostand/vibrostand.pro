@@ -17,10 +17,10 @@ SOURCES += main.cpp\
 		mainwindow.cpp \
 	qcustomplot.cpp\
 	bearing.cpp \
-	spectumanalyzer.cpp \
 	filter/filt.cpp \
 	windowfilter.cpp \
-	aboutwindow.cpp
+	aboutwindow.cpp \
+    spectrumanalyzer.cpp
 
 win32 {
 	LIBS += -lglu32 -lopengl32
@@ -34,10 +34,10 @@ HEADERS  += mainwindow.h \
 	qcustomplot.h\
 	bearing.h \
 	ffft/* \
-	spectumanalyzer.h \
 	filter/filt.h \
 	windowfilter.h \
-	aboutwindow.h
+	aboutwindow.h \
+    spectrumanalyzer.h
 
 FORMS    += \
 	mainwindow_windows.ui \

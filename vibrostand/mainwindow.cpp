@@ -454,9 +454,11 @@ void MainWindow::on_save_file_clicked() {
 		//Get vibration vector
 		bearingA.nextStep();
 		auto vibrationA = bearingA.getVibration();
+		auto spectrumA = analyzer.calculate(vibrationA);
 
 		bearingB.nextStep();
 		auto vibrationB = bearingB.getVibration();
+		auto spectrumB = analyzer.calculate(vibrationB);
 
 		//Create file diag
 		QFile fileOut(folder + diagPrefix + QString::number(i) + ".txt");
@@ -468,7 +470,7 @@ void MainWindow::on_save_file_clicked() {
 			out << bearingA.getBallsDiameter() * 1.0 << endl;
 			out << (double)bearingA.getDiscrFreq() / (double)vibrationA.length() << endl;
 
-			for (double &sample : vibrationA) {
+			for (double &sample : spectrumA.second) {
 				out << sample << endl;
 			}
 		}
@@ -483,7 +485,7 @@ void MainWindow::on_save_file_clicked() {
 			out << bearingB.getDiameter() * 1.0 << endl;
 			out << bearingB.getBallsDiameter() * 1.0 << endl;
 			out << (double)bearingB.getDiscrFreq() / (double)vibrationB.length() << endl;
-			for (double &sample : vibrationB) {
+			for (double &sample : spectrumB.second) {
 				out << sample << endl;
 			}
 		}

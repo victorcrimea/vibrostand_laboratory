@@ -12,7 +12,7 @@
 #include "aboutwindow.h"
 #include "bearing.h"
 #include "qcustomplot.h"
-#include "spectumanalyzer.h"
+#include "spectrumanalyzer.h"
 #include "windowfilter.h"
 
 namespace Ui {
