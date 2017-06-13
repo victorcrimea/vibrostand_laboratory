@@ -119,7 +119,7 @@ void Bearing::applyDefects() {
 	}
 
 	//DEFECT_3
-	const auto f3 = F_separator + balls;
+	const auto f3 = F_separator * balls;
 	for (int i = 0; i < vibration.length(); ++i) {
 		vibration[i] += defects[DefectType::DEFECT_3] * sin(f3 * 2 * M_PI * dt * i);
 	}
